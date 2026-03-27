@@ -80,6 +80,13 @@ export interface SunTimes {
   sunset: Date
 }
 
+export interface DaylightInfo {
+  totalHours: number
+  remainingHours: number
+  percentComplete: number
+  isDay: boolean
+}
+
 export function calculateSunTimes(lat: number, lon: number, date: Date, timezone: string): SunTimes {
   const jDate = getJulianDate(date)
   const century = (jDate - 2451545.0) / 36525.0
@@ -159,4 +166,39 @@ function toRadians(degrees: number): number {
 
 function toDegrees(radians: number): number {
   return radians * 180 / Math.PI
+}
+
+export function calculateDaylightInfo(sunrise: Date, sunset: Date, currentTime: Date): DaylightInfo {
+  const sunriseMs = sunrise.getTime()
+  const sunsetMs = sunset.getTime()
+  const currentMs = currentTime.getTime()
+  
+  const totalDaylight = sunsetMs - sunriseMs
+  const totalHours = totalDaylight / (1000 * 60 * 60)
+  
+  const isDay = currentMs >= sunriseMs && currentMs <= sunsetMs
+  
+  let remainingHours = 0
+  let percentComplete = 0
+  
+  if (isDay) {
+    const remaining = sunsetMs - currentMs
+    remainingHours = remaining / (1000 * 60 * 60)
+    const elapsed = currentMs - sunriseMs
+    percentComplete = (elapsed / totalDaylight) * 100
+  } else if (currentMs < sunriseMs) {
+    const remaining = sunsetMs - sunriseMs
+    remainingHours = remaining / (1000 * 60 * 60)
+    percentComplete = 0
+  } else {
+    remainingHours = 0
+    percentComplete = 100
+  }
+  
+  return {
+    totalHours,
+    remainingHours,
+    percentComplete,
+    isDay
+  }
 }

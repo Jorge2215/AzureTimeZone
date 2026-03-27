@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trash, DotsSixVertical, SunHorizon, MoonStars } from '@phosphor-icons/react'
+import { Trash, DotsSixVertical, SunHorizon, MoonStars, Clock } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { formatTime, formatDate, getUTCOffset, calculateSunTimes } from '@/lib/timezones'
+import { Progress } from '@/components/ui/progress'
+import { formatTime, formatDate, getUTCOffset, calculateSunTimes, calculateDaylightInfo } from '@/lib/timezones'
 import { CityMapDialog } from '@/components/CityMapDialog'
 
 interface TimeZoneCardProps {
@@ -57,10 +58,22 @@ export function TimeZoneCard({
     ? calculateSunTimes(lat, lon, localTime, timezone)
     : null
 
+  const daylightInfo = sunTimes 
+    ? calculateDaylightInfo(sunTimes.sunrise, sunTimes.sunset, localTime)
+    : null
+
   const formatSunTime = (date: Date) => {
     const hours = date.getHours().toString().padStart(2, '0')
     const minutes = date.getMinutes().toString().padStart(2, '0')
     return `${hours}:${minutes}`
+  }
+
+  const formatHours = (hours: number) => {
+    const h = Math.floor(hours)
+    const m = Math.round((hours - h) * 60)
+    if (h === 0) return `${m}m`
+    if (m === 0) return `${h}h`
+    return `${h}h ${m}m`
   }
 
   return (
@@ -126,6 +139,37 @@ export function TimeZoneCard({
                 <span className="text-muted-foreground">Sunset </span>
                 <span className="font-mono font-medium text-foreground">{formatSunTime(sunTimes.sunset)}</span>
               </div>
+            </div>
+          </div>
+        )}
+
+        {daylightInfo && (
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <Clock size={16} weight="bold" className="text-primary" />
+                <span className="text-muted-foreground">
+                  {daylightInfo.isDay ? 'Daylight remaining' : 'Daylight hours'}
+                </span>
+              </div>
+              <span className="font-mono font-semibold text-foreground">
+                {daylightInfo.isDay ? formatHours(daylightInfo.remainingHours) : formatHours(daylightInfo.totalHours)}
+              </span>
+            </div>
+            <div className="relative">
+              <Progress 
+                value={daylightInfo.percentComplete} 
+                className="h-2"
+              />
+              {!daylightInfo.isDay && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <MoonStars size={12} weight="fill" className="text-muted-foreground/50" />
+                </div>
+              )}
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{formatHours(daylightInfo.totalHours)} total</span>
+              <span>{Math.round(daylightInfo.percentComplete)}% complete</span>
             </div>
           </div>
         )}
