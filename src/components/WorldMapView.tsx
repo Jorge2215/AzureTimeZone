@@ -78,7 +78,7 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
             src="https://www.openstreetmap.org/export/embed.html?bbox=-180,-85,180,85&layer=mapnik"
             className="absolute inset-0 w-full h-full border-0"
             title="World Map"
-            style={{ pointerEvents: 'none' }}
+            style={{ pointerEvents: 'auto' }}
           />
         </div>
 
