@@ -95,8 +95,8 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
                 key={marker.id}
                 className="absolute z-10"
                 style={{
-                  left: `${(pos.x / 1000) * 100}%`,
-                  top: `${(pos.y / 500) * 100}%`,
+                  left: `${(pos.x / dimensions.width) * 100}%`,
+                  top: `${(pos.y / dimensions.height) * 100}%`,
                   transform: 'translate(-50%, -100%)',
                 }}
                 initial={{ opacity: 0, y: 10 }}
