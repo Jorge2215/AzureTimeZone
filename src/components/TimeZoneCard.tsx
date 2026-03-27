@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trash, DotsSixVertical, SunHorizon, MoonStars, Clock } from '@phosphor-icons/react'
+import { Trash, DotsSixVertical, SunHorizon, MoonStars, Clock, Wind, Drop } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatTime, formatDate, getUTCOffset, calculateSunTimes, calculateDaylightInfo } from '@/lib/timezones'
+import { fetchWeather, getWeatherIcon, type WeatherData } from '@/lib/weather'
 import { CityMapDialog } from '@/components/CityMapDialog'
 
 interface TimeZoneCardProps {
@@ -31,6 +33,8 @@ export function TimeZoneCard({
 }: TimeZoneCardProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isHovered, setIsHovered] = useState(false)
+  const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(true)
 
   useEffect(() => {
     if (convertMode && convertDate) {
@@ -44,6 +48,20 @@ export function TimeZoneCard({
 
     return () => clearInterval(interval)
   }, [convertMode, convertDate])
+
+  useEffect(() => {
+    if (lat !== undefined && lon !== undefined) {
+      setWeatherLoading(true)
+      fetchWeather(lat, lon)
+        .then(data => {
+          setWeather(data)
+          setWeatherLoading(false)
+        })
+        .catch(() => {
+          setWeatherLoading(false)
+        })
+    }
+  }, [lat, lon])
 
   const getLocalTime = () => {
     return new Date(currentTime.toLocaleString('en-US', { timeZone: timezone }))
@@ -123,6 +141,40 @@ export function TimeZoneCard({
         <div className="mt-2 text-sm text-muted-foreground">
           {dateString}
         </div>
+
+        {lat !== undefined && lon !== undefined && (
+          <div className="mt-4">
+            {weatherLoading ? (
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-16 w-16 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            ) : weather ? (
+              <div className="flex items-center gap-4 p-3 bg-accent/10 rounded-lg border border-accent/20">
+                <div className="text-5xl">{getWeatherIcon(weather.weatherCode)}</div>
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-foreground">{weather.temperature}°C</span>
+                    <span className="text-sm text-muted-foreground">{weather.weatherDescription}</span>
+                  </div>
+                  <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Wind size={14} weight="bold" />
+                      <span>{weather.windSpeed} km/h</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Drop size={14} weight="bold" />
+                      <span>{weather.humidity}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
 
         {sunTimes && (
           <div className="mt-4 flex items-center gap-6">
