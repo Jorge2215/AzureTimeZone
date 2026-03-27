@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Globe, Clock, Eye, MapTrifold, SquaresFour } from '@phosphor-icons/react'
 import { Toaster, toast } from 'sonner'
+import { Reorder } from 'framer-motion'
 import { TimeZoneCard } from '@/components/TimeZoneCard'
 import { AddTimeZoneDialog } from '@/components/AddTimeZoneDialog'
 import { TimeConverter } from '@/components/TimeConverter'
@@ -184,21 +185,33 @@ function App() {
             <Separator className="mb-8" />
 
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Reorder.Group
+                axis="y"
+                values={timezones}
+                onReorder={setSavedTimezones}
+                className="flex flex-col gap-6"
+              >
                 {timezones.map((tz) => (
-                  <TimeZoneCard
+                  <Reorder.Item
                     key={tz.id}
-                    timezone={tz.value}
-                    city={tz.city}
-                    country={tz.country}
-                    lat={tz.lat}
-                    lon={tz.lon}
-                    onRemove={() => handleRemoveTimeZone(tz.id)}
-                    convertMode={convertMode}
-                    convertDate={convertDate}
-                  />
+                    value={tz}
+                    className="cursor-grab active:cursor-grabbing list-none"
+                    drag="y"
+                    whileDrag={{ scale: 1.02, boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}
+                  >
+                    <TimeZoneCard
+                      timezone={tz.value}
+                      city={tz.city}
+                      country={tz.country}
+                      lat={tz.lat}
+                      lon={tz.lon}
+                      onRemove={() => handleRemoveTimeZone(tz.id)}
+                      convertMode={convertMode}
+                      convertDate={convertDate}
+                    />
+                  </Reorder.Item>
                 ))}
-              </div>
+              </Reorder.Group>
             ) : (
               <WorldMapView
                 markers={timezones.map((tz) => ({

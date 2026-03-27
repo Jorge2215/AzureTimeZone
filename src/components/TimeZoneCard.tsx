@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trash } from '@phosphor-icons/react'
+import { Trash, DotsSixVertical } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -64,11 +64,16 @@ export function TimeZoneCard({
     >
       <Card className="relative p-6 transition-all duration-200 hover:shadow-lg hover:border-accent group">
         <div className="flex items-start justify-between mb-3">
-          <div>
-            <h3 className="text-lg font-medium text-foreground">{city}</h3>
-            <Badge variant="secondary" className="mt-1 text-xs">
-              {offset}
-            </Badge>
+          <div className="flex items-center gap-2">
+            <div className="text-muted-foreground hover:text-foreground transition-colors cursor-grab active:cursor-grabbing">
+              <DotsSixVertical size={20} weight="bold" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-foreground">{city}</h3>
+              <Badge variant="secondary" className="mt-1 text-xs">
+                {offset}
+              </Badge>
+            </div>
           </div>
           
           <motion.div
