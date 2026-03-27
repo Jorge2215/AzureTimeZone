@@ -34,11 +34,11 @@ This is a focused utility app with time zone management, clock displays, and tim
 - **Success criteria**: Conversions are instant and accurate, including handling of DST transitions
 
 ### Time Zone Information
-- **Functionality**: Display UTC offset, location names, and current date for each zone
-- **Purpose**: Provide context beyond just the time (is it today or tomorrow there?)
-- **Trigger**: Information displays alongside each clock
-- **Progression**: Zone is added → City name, UTC offset, and date display → Updates as time changes
-- **Success criteria**: All metadata is accurate and updates appropriately (especially date changes at midnight)
+- **Functionality**: Display UTC offset, location names, current date, and interactive map for each zone
+- **Purpose**: Provide context beyond just the time (is it today or tomorrow there?) and visualize city locations
+- **Trigger**: Information displays alongside each clock; map opens via "View Map" button
+- **Progression**: Zone is added → City name, UTC offset, and date display → Click "View Map" → Dialog opens with OpenStreetMap iframe showing city location
+- **Success criteria**: All metadata is accurate and updates appropriately (especially date changes at midnight); maps load correctly with proper coordinates and zoom level
 
 ## Edge Case Handling
 
@@ -47,7 +47,8 @@ This is a focused utility app with time zone management, clock displays, and tim
 - **Daylight Saving Time**: Automatically handle DST transitions with correct offset adjustments
 - **Date Boundaries**: Clearly show when different zones are in different days
 - **Search No Results**: Display helpful message when time zone search yields no matches
-- **Maximum Zones**: Limit to reasonable number (8-10 zones) to prevent UI overflow
+- **Maximum Zones**: Limit to reasonable number (10 zones) to prevent UI overflow
+- **Missing Coordinates**: Gracefully handle time zones without latitude/longitude data by not displaying map button
 
 ## Design Direction
 
@@ -93,13 +94,14 @@ Subtle pulsing on the second hand or time display creates life without distracti
 
 - **Components**: 
   - `Card` - For each time zone display with clean borders and subtle shadows
-  - `Dialog` - For adding new time zones with search functionality
-  - `Button` - Primary actions (add zone) with accent color, secondary for remove actions
+  - `Dialog` - For adding new time zones with search functionality and viewing city maps
+  - `Button` - Primary actions (add zone) with accent color, secondary for remove actions, outline for map viewing
   - `Input` - Search field in add zone dialog with icon
   - `ScrollArea` - For time zone list in dialog when results are lengthy
   - `Badge` - For UTC offset indicators with subtle background
   - `Separator` - Between time zone cards for visual organization
   - Custom clock component with `framer-motion` for smooth time updates
+  - OpenStreetMap iframe integration for city location visualization
 
 - **Customizations**: 
   - Custom time picker component using radix primitives
@@ -120,7 +122,8 @@ Subtle pulsing on the second hand or time display creates life without distracti
   - `MagnifyingGlass` - Search input
   - `Globe` - App logo/header icon
   - `Clock` - Converter mode icon
-  - `MapPin` - Location indicator
+  - `MapPin` - Location indicator and map view action
+  - `Eye` - Show live time mode
 
 - **Spacing**: 
   - Container padding: `p-6` on desktop, `p-4` on mobile

@@ -5,10 +5,14 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatTime, formatDate, getUTCOffset } from '@/lib/timezones'
+import { CityMapDialog } from '@/components/CityMapDialog'
 
 interface TimeZoneCardProps {
   timezone: string
   city: string
+  country: string
+  lat?: number
+  lon?: number
   onRemove: () => void
   convertMode?: boolean
   convertDate?: Date
@@ -16,7 +20,10 @@ interface TimeZoneCardProps {
 
 export function TimeZoneCard({ 
   timezone, 
-  city, 
+  city,
+  country,
+  lat,
+  lon,
   onRemove, 
   convertMode = false,
   convertDate
@@ -68,6 +75,7 @@ export function TimeZoneCard({
             initial={{ opacity: 0 }}
             animate={{ opacity: isHovered ? 1 : 0 }}
             transition={{ duration: 0.15 }}
+            className="flex gap-2"
           >
             <Button
               variant="ghost"
@@ -87,6 +95,17 @@ export function TimeZoneCard({
         <div className="mt-2 text-sm text-muted-foreground">
           {dateString}
         </div>
+
+        {lat !== undefined && lon !== undefined && (
+          <div className="mt-4">
+            <CityMapDialog 
+              city={city}
+              country={country}
+              lat={lat}
+              lon={lon}
+            />
+          </div>
+        )}
       </Card>
     </motion.div>
   )

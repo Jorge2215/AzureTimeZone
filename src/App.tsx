@@ -19,21 +19,27 @@ const DEFAULT_TIMEZONES: SavedTimeZone[] = [
     value: 'America/New_York',
     label: 'New York (UTC-5)',
     city: 'New York',
-    country: 'USA'
+    country: 'USA',
+    lat: 40.7128,
+    lon: -74.0060
   },
   {
     id: '2',
     value: 'Europe/London',
     label: 'London (UTC+0)',
     city: 'London',
-    country: 'UK'
+    country: 'UK',
+    lat: 51.5074,
+    lon: -0.1278
   },
   {
     id: '3',
     value: 'Asia/Tokyo',
     label: 'Tokyo (UTC+9)',
     city: 'Tokyo',
-    country: 'Japan'
+    country: 'Japan',
+    lat: 35.6762,
+    lon: 139.6503
   }
 ]
 
@@ -166,6 +172,9 @@ function App() {
                   key={tz.id}
                   timezone={tz.value}
                   city={tz.city}
+                  country={tz.country}
+                  lat={tz.lat}
+                  lon={tz.lon}
                   onRemove={() => handleRemoveTimeZone(tz.id)}
                   convertMode={convertMode}
                   convertDate={convertDate}
