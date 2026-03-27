@@ -40,6 +40,13 @@ This is a focused utility app with time zone management, clock displays, and tim
 - **Progression**: Zone is added → City name, UTC offset, and date display → Click "View Map" → Dialog opens with OpenStreetMap iframe showing city location
 - **Success criteria**: All metadata is accurate and updates appropriately (especially date changes at midnight); maps load correctly with proper coordinates and zoom level
 
+### World Map View
+- **Functionality**: Visual representation showing all selected cities plotted on a world map with live time overlays
+- **Purpose**: Provide spatial context for time zones and visualize global time distribution at a glance
+- **Trigger**: User switches from Grid view to Map view using tab controls
+- **Progression**: Click Map tab → World map displays → All cities appear as markers with coordinates → Time overlays update in real-time → Hover over marker for enhanced display
+- **Success criteria**: Markers accurately positioned using lat/lon, time overlays remain readable, smooth transitions between hover states, day/night visual indicators work correctly
+
 ## Edge Case Handling
 
 - **Empty State**: Show helpful prompt to add first time zone when none are saved
@@ -93,15 +100,17 @@ Subtle pulsing on the second hand or time display creates life without distracti
 ## Component Selection
 
 - **Components**: 
-  - `Card` - For each time zone display with clean borders and subtle shadows
+  - `Card` - For each time zone display with clean borders and subtle shadows; also used for map view container
   - `Dialog` - For adding new time zones with search functionality and viewing city maps
   - `Button` - Primary actions (add zone) with accent color, secondary for remove actions, outline for map viewing
   - `Input` - Search field in add zone dialog with icon
   - `ScrollArea` - For time zone list in dialog when results are lengthy
   - `Badge` - For UTC offset indicators with subtle background
   - `Separator` - Between time zone cards for visual organization
+  - `Tabs` - For switching between Grid and Map views
   - Custom clock component with `framer-motion` for smooth time updates
-  - OpenStreetMap iframe integration for city location visualization
+  - Custom world map component using SVG with Mercator projection for accurate city positioning
+  - OpenStreetMap iframe integration for individual city location visualization
 
 - **Customizations**: 
   - Custom time picker component using radix primitives
@@ -124,6 +133,8 @@ Subtle pulsing on the second hand or time display creates life without distracti
   - `Clock` - Converter mode icon
   - `MapPin` - Location indicator and map view action
   - `Eye` - Show live time mode
+  - `MapTrifold` - Map view mode
+  - `SquaresFour` - Grid view mode
 
 - **Spacing**: 
   - Container padding: `p-6` on desktop, `p-4` on mobile

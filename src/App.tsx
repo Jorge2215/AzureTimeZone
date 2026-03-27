@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Globe, Clock, Eye } from '@phosphor-icons/react'
+import { Globe, Clock, Eye, MapTrifold, SquaresFour } from '@phosphor-icons/react'
 import { Toaster, toast } from 'sonner'
 import { TimeZoneCard } from '@/components/TimeZoneCard'
 import { AddTimeZoneDialog } from '@/components/AddTimeZoneDialog'
 import { TimeConverter } from '@/components/TimeConverter'
+import { WorldMapView } from '@/components/WorldMapView'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { TimeZone } from '@/lib/timezones'
 
 interface SavedTimeZone extends TimeZone {
@@ -48,6 +50,7 @@ function App() {
   const [convertMode, setConvertMode] = useState(false)
   const [convertDate, setConvertDate] = useState<Date | undefined>(undefined)
   const [sourceTimezone, setSourceTimezone] = useState<string>('')
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
 
   const timezones = savedTimezones || DEFAULT_TIMEZONES
 
@@ -158,29 +161,58 @@ function App() {
               <div className="text-sm text-muted-foreground">
                 {timezones.length} {timezones.length === 1 ? 'zone' : 'zones'} active
               </div>
-              <AddTimeZoneDialog
-                onAddTimeZone={handleAddTimeZone}
-                existingTimezones={timezones.map((tz) => tz.value)}
-              />
+              <div className="flex items-center gap-3">
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'map')}>
+                  <TabsList>
+                    <TabsTrigger value="grid" className="gap-2">
+                      <SquaresFour size={18} weight="bold" />
+                      Grid
+                    </TabsTrigger>
+                    <TabsTrigger value="map" className="gap-2">
+                      <MapTrifold size={18} weight="bold" />
+                      Map
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <AddTimeZoneDialog
+                  onAddTimeZone={handleAddTimeZone}
+                  existingTimezones={timezones.map((tz) => tz.value)}
+                />
+              </div>
             </div>
 
             <Separator className="mb-8" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {timezones.map((tz) => (
-                <TimeZoneCard
-                  key={tz.id}
-                  timezone={tz.value}
-                  city={tz.city}
-                  country={tz.country}
-                  lat={tz.lat}
-                  lon={tz.lon}
-                  onRemove={() => handleRemoveTimeZone(tz.id)}
-                  convertMode={convertMode}
-                  convertDate={convertDate}
-                />
-              ))}
-            </div>
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {timezones.map((tz) => (
+                  <TimeZoneCard
+                    key={tz.id}
+                    timezone={tz.value}
+                    city={tz.city}
+                    country={tz.country}
+                    lat={tz.lat}
+                    lon={tz.lon}
+                    onRemove={() => handleRemoveTimeZone(tz.id)}
+                    convertMode={convertMode}
+                    convertDate={convertDate}
+                  />
+                ))}
+              </div>
+            ) : (
+              <WorldMapView
+                markers={timezones.map((tz) => ({
+                  id: tz.id,
+                  city: tz.city,
+                  country: tz.country,
+                  timezone: tz.value,
+                  lat: tz.lat || 0,
+                  lon: tz.lon || 0,
+                }))}
+                convertMode={convertMode}
+                convertDate={convertDate}
+              />
+            )}
           </>
         )}
       </div>
