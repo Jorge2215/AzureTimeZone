@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { formatTime, getUTCOffset } from '@/lib/timezones'
 
 interface MapMarker {
@@ -74,87 +72,15 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
 
   return (
     <Card className="relative w-full overflow-hidden bg-card" ref={containerRef}>
-      <div className="relative w-full" style={{ paddingBottom: '50%' }}>
-        <svg
-          viewBox="0 0 1000 500"
-          className="absolute inset-0 w-full h-full"
-          style={{ background: 'linear-gradient(180deg, oklch(0.25 0.05 250) 0%, oklch(0.30 0.08 245) 100%)' }}
-        >
-          <defs>
-            <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="0.8" fill="oklch(0.99 0 0 / 0.08)" />
-            </pattern>
-            
-            <radialGradient id="dayGlow">
-              <stop offset="0%" stopColor="oklch(0.85 0.15 85)" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="oklch(0.75 0.15 75)" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="oklch(0.75 0.15 75)" stopOpacity="0" />
-            </radialGradient>
-            
-            <radialGradient id="nightGlow">
-              <stop offset="0%" stopColor="oklch(0.45 0.15 250)" stopOpacity="0.3" />
-              <stop offset="50%" stopColor="oklch(0.35 0.12 255)" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="oklch(0.35 0.12 255)" stopOpacity="0" />
-            </radialGradient>
-
-            <filter id="markerGlow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-
-          <rect width="1000" height="500" fill="url(#dots)" />
-
-          {markers.map((marker) => {
-            const pos = projectToMap(marker.lat, marker.lon, 1000, 500)
-            const isDaytime = getHourAngle(marker.timezone)
-            const isHovered = hoveredMarker === marker.id
-
-            return (
-              <g key={marker.id}>
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={isHovered ? 60 : 45}
-                  fill={isDaytime ? 'url(#dayGlow)' : 'url(#nightGlow)'}
-                  className="transition-all duration-300"
-                />
-                
-                <motion.circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={8}
-                  fill={isDaytime ? 'oklch(0.85 0.18 85)' : 'oklch(0.75 0.15 210)'}
-                  stroke="oklch(0.99 0 0)"
-                  strokeWidth={2}
-                  filter="url(#markerGlow)"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: isHovered ? 1.4 : 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="cursor-pointer"
-                  onMouseEnter={() => setHoveredMarker(marker.id)}
-                  onMouseLeave={() => setHoveredMarker(null)}
-                />
-
-                <motion.line
-                  x1={pos.x}
-                  y1={pos.y}
-                  x2={pos.x}
-                  y2={pos.y - 30}
-                  stroke="oklch(0.99 0 0 / 0.5)"
-                  strokeWidth={1}
-                  strokeDasharray="2,2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: isHovered ? 1 : 0 }}
-                  transition={{ duration: 0.2 }}
-                />
-              </g>
-            )
-          })}
-        </svg>
+      <div className="relative w-full" style={{ paddingBottom: '50%', minHeight: '500px' }}>
+        <div className="absolute inset-0 w-full h-full">
+          <iframe
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-180,-85,180,85&layer=mapnik"
+            className="absolute inset-0 w-full h-full border-0"
+            title="World Map"
+            style={{ pointerEvents: 'none' }}
+          />
+        </div>
 
         <AnimatePresence>
           {markers.map((marker) => {
@@ -167,7 +93,7 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
             return (
               <motion.div
                 key={marker.id}
-                className="absolute pointer-events-none"
+                className="absolute z-10"
                 style={{
                   left: `${(pos.x / 1000) * 100}%`,
                   top: `${(pos.y / 500) * 100}%`,
@@ -182,40 +108,65 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
               >
-                <div 
-                  className={`
-                    px-3 py-2 rounded-lg shadow-lg border backdrop-blur-sm
-                    transition-all duration-200
-                    ${isHovered 
-                      ? 'bg-card/95 border-accent shadow-xl' 
-                      : 'bg-card/80 border-border/50'
-                    }
-                  `}
-                  onMouseEnter={() => setHoveredMarker(marker.id)}
-                  onMouseLeave={() => setHoveredMarker(null)}
-                  style={{ pointerEvents: 'auto' }}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div 
-                      className={`w-2 h-2 rounded-full ${
-                        isDaytime ? 'bg-[oklch(0.85_0.18_85)]' : 'bg-accent'
-                      }`}
-                    />
-                    <div className="font-medium text-sm text-foreground whitespace-nowrap">
-                      {marker.city}
+                <div className="relative">
+                  <div 
+                    className={`
+                      absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full
+                      ${isDaytime ? 'bg-[oklch(0.85_0.18_85)]' : 'bg-accent'}
+                      border-2 border-white shadow-lg cursor-pointer z-20
+                      transition-transform duration-200
+                      ${isHovered ? 'scale-150' : 'scale-100'}
+                    `}
+                    onMouseEnter={() => setHoveredMarker(marker.id)}
+                    onMouseLeave={() => setHoveredMarker(null)}
+                  />
+                  
+                  <div 
+                    className={`
+                      mb-2 px-3 py-2 rounded-lg shadow-lg border backdrop-blur-sm
+                      transition-all duration-200
+                      ${isHovered 
+                        ? 'bg-card/95 border-accent shadow-xl' 
+                        : 'bg-card/80 border-border/50'
+                      }
+                    `}
+                    onMouseEnter={() => setHoveredMarker(marker.id)}
+                    onMouseLeave={() => setHoveredMarker(null)}
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <div 
+                        className={`w-2 h-2 rounded-full ${
+                          isDaytime ? 'bg-[oklch(0.85_0.18_85)]' : 'bg-accent'
+                        }`}
+                      />
+                      <div className="font-medium text-sm text-foreground whitespace-nowrap">
+                        {marker.city}
+                      </div>
                     </div>
-                  </div>
-                  <div className="font-mono text-lg font-bold text-foreground tabular-nums">
-                    {timeStr}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {offset}
+                    <div className="font-mono text-lg font-bold text-foreground tabular-nums">
+                      {timeStr}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {offset}
+                    </div>
                   </div>
                 </div>
               </motion.div>
             )
           })}
         </AnimatePresence>
+      </div>
+      
+      <div className="absolute bottom-2 right-2 text-[10px] text-muted-foreground bg-background/80 px-2 py-1 rounded">
+        Map © <a 
+          href="https://www.openstreetmap.org/copyright" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground"
+        >
+          OpenStreetMap
+        </a>
       </div>
     </Card>
   )
