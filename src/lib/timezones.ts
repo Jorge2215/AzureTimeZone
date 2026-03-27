@@ -74,3 +74,89 @@ export function formatDate(date: Date): string {
     day: "numeric" 
   })
 }
+
+export interface SunTimes {
+  sunrise: Date
+  sunset: Date
+}
+
+export function calculateSunTimes(lat: number, lon: number, date: Date, timezone: string): SunTimes {
+  const jDate = getJulianDate(date)
+  const century = (jDate - 2451545.0) / 36525.0
+  
+  const meanLongSun = (280.46646 + century * (36000.76983 + century * 0.0003032)) % 360
+  const meanAnomalySun = 357.52911 + century * (35999.05029 - 0.0001537 * century)
+  const eccentEarthOrbit = 0.016708634 - century * (0.000042037 + 0.0000001267 * century)
+  
+  const sunEqOfCenter = Math.sin(toRadians(meanAnomalySun)) * (1.914602 - century * (0.004817 + 0.000014 * century)) +
+                        Math.sin(toRadians(2 * meanAnomalySun)) * (0.019993 - 0.000101 * century) +
+                        Math.sin(toRadians(3 * meanAnomalySun)) * 0.000289
+  
+  const sunTrueLong = meanLongSun + sunEqOfCenter
+  const sunAppLong = sunTrueLong - 0.00569 - 0.00478 * Math.sin(toRadians(125.04 - 1934.136 * century))
+  
+  const meanObliqEcliptic = 23 + (26 + ((21.448 - century * (46.815 + century * (0.00059 - century * 0.001813)))) / 60) / 60
+  const obliqCorr = meanObliqEcliptic + 0.00256 * Math.cos(toRadians(125.04 - 1934.136 * century))
+  
+  const sunDeclin = toDegrees(Math.asin(Math.sin(toRadians(obliqCorr)) * Math.sin(toRadians(sunAppLong))))
+  
+  const varY = Math.tan(toRadians(obliqCorr / 2)) * Math.tan(toRadians(obliqCorr / 2))
+  
+  const eqOfTime = 4 * toDegrees(varY * Math.sin(2 * toRadians(meanLongSun)) -
+                                 2 * eccentEarthOrbit * Math.sin(toRadians(meanAnomalySun)) +
+                                 4 * eccentEarthOrbit * varY * Math.sin(toRadians(meanAnomalySun)) * Math.cos(2 * toRadians(meanLongSun)) -
+                                 0.5 * varY * varY * Math.sin(4 * toRadians(meanLongSun)) -
+                                 1.25 * eccentEarthOrbit * eccentEarthOrbit * Math.sin(2 * toRadians(meanAnomalySun)))
+  
+  const haSunrise = toDegrees(Math.acos(Math.cos(toRadians(90.833)) / (Math.cos(toRadians(lat)) * Math.cos(toRadians(sunDeclin))) -
+                              Math.tan(toRadians(lat)) * Math.tan(toRadians(sunDeclin))))
+  
+  const solarNoon = (720 - 4 * lon - eqOfTime) / 1440
+  const sunriseTime = solarNoon - haSunrise * 4 / 1440
+  const sunsetTime = solarNoon + haSunrise * 4 / 1440
+  
+  const createTimeInTimezone = (fractionalDay: number) => {
+    const hours = Math.floor(fractionalDay * 24)
+    const minutes = Math.floor((fractionalDay * 24 - hours) * 60)
+    
+    const baseDate = new Date(date)
+    baseDate.setHours(0, 0, 0, 0)
+    
+    const utcTime = new Date(Date.UTC(
+      baseDate.getUTCFullYear(),
+      baseDate.getUTCMonth(),
+      baseDate.getUTCDate(),
+      hours,
+      minutes,
+      0
+    ))
+    
+    const localString = utcTime.toLocaleString('en-US', { timeZone: timezone })
+    return new Date(localString)
+  }
+  
+  return {
+    sunrise: createTimeInTimezone(sunriseTime),
+    sunset: createTimeInTimezone(sunsetTime)
+  }
+}
+
+function getJulianDate(date: Date): number {
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  
+  let a = Math.floor((14 - month) / 12)
+  let y = year + 4800 - a
+  let m = month + 12 * a - 3
+  
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045
+}
+
+function toRadians(degrees: number): number {
+  return degrees * Math.PI / 180
+}
+
+function toDegrees(radians: number): number {
+  return radians * 180 / Math.PI
+}

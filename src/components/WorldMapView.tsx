@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card } from '@/components/ui/card'
-import { formatTime, getUTCOffset } from '@/lib/timezones'
+import { formatTime, getUTCOffset, calculateSunTimes } from '@/lib/timezones'
+import { SunHorizon, MoonStars } from '@phosphor-icons/react'
 
 interface MapMarker {
   id: string
@@ -70,6 +71,12 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
     return isDaytime
   }
 
+  const formatSunTime = (date: Date) => {
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+  }
+
   return (
     <Card className="relative w-full overflow-hidden bg-card" ref={containerRef}>
       <div className="relative w-full" style={{ paddingBottom: '50%', minHeight: '500px' }}>
@@ -89,6 +96,9 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
             const offset = getUTCOffset(marker.timezone)
             const isDaytime = getHourAngle(marker.timezone)
             const isHovered = hoveredMarker === marker.id
+            
+            const localTime = new Date(currentTime.toLocaleString('en-US', { timeZone: marker.timezone }))
+            const sunTimes = calculateSunTimes(marker.lat, marker.lon, localTime, marker.timezone)
 
             return (
               <motion.div
@@ -147,8 +157,19 @@ export function WorldMapView({ markers, convertMode = false, convertDate }: Worl
                     <div className="font-mono text-lg font-bold text-foreground tabular-nums">
                       {timeStr}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground mt-0.5 mb-2">
                       {offset}
+                    </div>
+                    
+                    <div className="flex items-center gap-3 pt-2 border-t border-border/30">
+                      <div className="flex items-center gap-1">
+                        <SunHorizon size={14} weight="duotone" className="text-primary" />
+                        <span className="text-xs font-mono text-foreground">{formatSunTime(sunTimes.sunrise)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MoonStars size={14} weight="duotone" className="text-accent" />
+                        <span className="text-xs font-mono text-foreground">{formatSunTime(sunTimes.sunset)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

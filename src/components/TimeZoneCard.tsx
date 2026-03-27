@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trash, DotsSixVertical } from '@phosphor-icons/react'
+import { Trash, DotsSixVertical, SunHorizon, MoonStars } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { formatTime, formatDate, getUTCOffset } from '@/lib/timezones'
+import { formatTime, formatDate, getUTCOffset, calculateSunTimes } from '@/lib/timezones'
 import { CityMapDialog } from '@/components/CityMapDialog'
 
 interface TimeZoneCardProps {
@@ -53,6 +53,16 @@ export function TimeZoneCard({
   const dateString = formatDate(localTime)
   const offset = getUTCOffset(timezone)
 
+  const sunTimes = lat !== undefined && lon !== undefined 
+    ? calculateSunTimes(lat, lon, localTime, timezone)
+    : null
+
+  const formatSunTime = (date: Date) => {
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -100,6 +110,25 @@ export function TimeZoneCard({
         <div className="mt-2 text-sm text-muted-foreground">
           {dateString}
         </div>
+
+        {sunTimes && (
+          <div className="mt-4 flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <SunHorizon size={18} weight="duotone" className="text-primary" />
+              <div className="text-sm">
+                <span className="text-muted-foreground">Sunrise </span>
+                <span className="font-mono font-medium text-foreground">{formatSunTime(sunTimes.sunrise)}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <MoonStars size={18} weight="duotone" className="text-accent" />
+              <div className="text-sm">
+                <span className="text-muted-foreground">Sunset </span>
+                <span className="font-mono font-medium text-foreground">{formatSunTime(sunTimes.sunset)}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {lat !== undefined && lon !== undefined && (
           <div className="mt-4">
