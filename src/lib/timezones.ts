@@ -16,6 +16,7 @@ export const TIMEZONES: TimeZone[] = [
   { value: "America/Chicago", label: "Chicago (UTC-6)", city: "Chicago", country: "USA", lat: 41.8781, lon: -87.6298 },
   { value: "America/New_York", label: "New York (UTC-5)", city: "New York", country: "USA", lat: 40.7128, lon: -74.0060 },
   { value: "America/Caracas", label: "Caracas (UTC-4)", city: "Caracas", country: "Venezuela", lat: 10.4806, lon: -66.9036 },
+  { value: "America/Argentina/Buenos_Aires", label: "Buenos Aires (UTC-3)", city: "Buenos Aires", country: "Argentina", lat: -34.6037, lon: -58.3816 },
   { value: "America/Sao_Paulo", label: "São Paulo (UTC-3)", city: "São Paulo", country: "Brazil", lat: -23.5505, lon: -46.6333 },
   { value: "Atlantic/South_Georgia", label: "South Georgia (UTC-2)", city: "South Georgia", country: "UK", lat: -54.2806, lon: -36.5089 },
   { value: "Atlantic/Azores", label: "Azores (UTC-1)", city: "Azores", country: "Portugal", lat: 37.7412, lon: -25.6756 },
